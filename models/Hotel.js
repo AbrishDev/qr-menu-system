@@ -1,9 +1,10 @@
 const mongoose = require('mongoose');
 
-const HotelSchema = new mongoose.Schema({
+const hotelSchema = new mongoose.Schema({
   name: { type: String, required: true },
   location: { type: String, required: true },
-  qrCodeUrl: { type: String }, // URL for the QR code
+  admin: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // Hotel Admin
+  qrCode: { type: String }, // QR code URL or Base64 string
 });
 
-module.exports = mongoose.model('Hotel', HotelSchema);
+module.exports = mongoose.model('Hotel', hotelSchema);

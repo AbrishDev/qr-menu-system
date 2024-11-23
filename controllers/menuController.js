@@ -1,28 +1,31 @@
-const Menu = require('../models/Menu');
+// controllers/menuController.js
+const MenuItem = require('../models/MenuItem');
 
-exports.addMenu = async (req, res) => {
+// Add Menu Item (hoteladmin only)
+exports.addMenuItem = async (req, res) => {
+  const { hotelId, name, description, price, category } = req.body;
   try {
-    const { hotelId } = req.params;
-    const { items } = req.body;
+    const menuItem = await MenuItem.create({
+      hotel: hotelId,
+      name,
+      description,
+      price,
+      category,
+    });
 
-    const menu = new Menu({ hotel: hotelId, items });
-    await menu.save();
-
-    res.status(201).json(menu);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(201).json(menuItem);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };
 
+// Get Menu by Hotel (public access)
 exports.getMenuByHotel = async (req, res) => {
+  const { hotelId } = req.params;
   try {
-    const { hotelId } = req.params;
-
-    const menu = await Menu.findOne({ hotel: hotelId }).populate('hotel');
-    if (!menu) return res.status(404).json({ message: 'Menu not found' });
-
-    res.status(200).json(menu);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    const menuItems = await MenuItem.find({ hotel: hotelId });
+    res.json(menuItems);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };

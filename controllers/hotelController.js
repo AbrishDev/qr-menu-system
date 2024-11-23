@@ -1,30 +1,43 @@
+// controllers/hotelController.js
 const Hotel = require('../models/Hotel');
+const User = require('../models/User');
 const QRCode = require('qrcode');
 
-exports.createHotel = async (req, res) => {
+// Add Hotel (superadmin only)
+exports.addHotel = async (req, res) => {
+  const { name, location, adminId } = req.body;
   try {
-    const { name, location } = req.body;
+    const adminUser = await User.findById(adminId);
+    if (!adminUser || adminUser.role !== 'hoteladmin') {
+      return res.status(400).json({ message: 'Admin not valid or not hoteladmin' });
+    }
 
-    // Create a new hotel
-    const hotel = new Hotel({ name, location });
+    const hotel = await Hotel.create({
+      name,
+      location,
+      admin: adminUser._id,
+    });
 
-    // Generate QR code
-    const qrCodeUrl = `${process.env.BASE_URL}/menu/${hotel._id}`;
-    const qrCodeImage = await QRCode.toDataURL(qrCodeUrl);
-    hotel.qrCodeUrl = qrCodeImage;
+    // Generate QR Code for the hotel
+    const qrData = `https://example.com/menu/${hotel._id}`;
+    const qrCode = await QRCode.toDataURL(qrData);
 
+    // Save the QR code URL in hotel
+    hotel.qrCode = qrCode;
     await hotel.save();
+
     res.status(201).json(hotel);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };
 
+// Get all hotels (available to superadmin)
 exports.getHotels = async (req, res) => {
   try {
-    const hotels = await Hotel.find();
-    res.status(200).json(hotels);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    const hotels = await Hotel.find().populate('admin', 'name email');
+    res.json(hotels);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };

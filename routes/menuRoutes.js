@@ -1,9 +1,14 @@
+// routes/menuRoutes.js
 const express = require('express');
-const { addMenu, getMenuByHotel } = require('../controllers/menuController');
+const { addMenuItem, getMenuByHotel } = require('../controllers/menuController');
+const { isAuthenticated, isHotelAdmin } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
-router.post('/:hotelId', addMenu); // Add menu for a hotel
-router.get('/:hotelId', getMenuByHotel); // Get menu for a hotel
+// Add menu item (hoteladmin only)
+router.post('/add', isAuthenticated, isHotelAdmin, addMenuItem);
+
+// Get menu by hotel ID (public access)
+router.get('/menu/:hotelId', getMenuByHotel);
 
 module.exports = router;

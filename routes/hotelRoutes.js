@@ -1,9 +1,12 @@
+// routes/hotelRoutes.js
 const express = require('express');
-const { createHotel, getHotels } = require('../controllers/hotelController');
+const { addHotel, getHotels } = require('../controllers/hotelController');
+const { isAuthenticated, isSuperAdmin } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
-router.post('/', createHotel); // Create a hotel
-router.get('/', getHotels);    // List all hotels
+// Superadmin routes
+router.post('/add', isAuthenticated, isSuperAdmin, addHotel);
+router.get('/', isAuthenticated, isSuperAdmin, getHotels);
 
 module.exports = router;
